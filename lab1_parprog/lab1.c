@@ -19,14 +19,14 @@ float psi(float t) {
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv); // Initialize MPI work
 
-    float X = 10, T = 10;
+    float X_max = 1000, T_max = 1000;
     // grid maximums
-    const int K = 1000, M = 1000;
+    int K = 500, M = 500;
     // grid axes
     float t = 0, x = 0;
     // grid steps
-    float tau = T / (K - 1);
-    float h = X / (M - 1);
+    float tau = T_max / (K - 1);
+    float h = X_max / (M - 1);
 
     // grid matrix
     float **u = (float**) malloc(K * sizeof(float*));
@@ -37,9 +37,16 @@ int main(int argc, char **argv) {
     // matrix size
     int matrix_size = K * M;
 
-    FILE *fp;
+    FILE *fp, *fp_axes;
     char name[] = "solution.txt";
+    char name_axes[] = "axes.txt";
+    fp_axes = fopen(name_axes, "w");
     fp = fopen(name, "w");
+
+    fprintf(fp_axes, "%f\n", X_max);
+    fprintf(fp_axes, "%f\n", T_max);
+    fprintf(fp_axes, "%d\n", M);
+    fprintf(fp_axes, "%d\n", K);
 
     //filling in angular values of grid using initial conditions
     for (int k = 0; k < K; ++k) {
@@ -112,7 +119,7 @@ int main(int argc, char **argv) {
         printf("time delay (ms) = %lf, number of processes: %d\n", end_time - start_time, size);
         //put solutions into file
         for (int k = 0; k < K; ++k) {
-            for (int m = 0; m < M - 1; ++m) {
+            for (int m = 0; m < M; ++m) {
                 fprintf(fp,"%lf",u[k][m]);
                 fprintf(fp,"%c",' ');
             }
@@ -125,6 +132,7 @@ int main(int argc, char **argv) {
     }
     free(u);
     fclose(fp);
+    fclose(fp_axes);
 
     MPI_Finalize();
 
